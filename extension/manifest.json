@@ -14,5 +14,6 @@
       "64": "icon64.png",
       "128": "icon128.png"
    },
-   "permissions": [ "tabs", "http://*.craigslist.org/*" ]
+   "permissions": [ "tabs", "http://*.craigslist.org/*" ],
+   "homepage_url": "http://code.google.com/p/craigslist-multisearch/"
 }
