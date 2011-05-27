@@ -1,0 +1,273 @@
+<html>
+<head><title>Craigslist Multisearch Defaults</title></head>
+<script type="text/javascript">
+
+// return the value of the radio button that is checked
+// return an empty string if none are checked, or there are no radio buttons
+// Function based on code from: http://www.somacon.com/p143.php
+function getCheckedValue(radioObj) {
+	if(!radioObj)
+		return "";
+	var radioLength = radioObj.length;
+	if(radioLength == undefined)
+		if(radioObj.checked)
+			return radioObj.value;
+		else
+			return "";
+	for(var i = 0; i < radioLength; i++) {
+		if(radioObj[i].checked) {
+			return radioObj[i].value;
+		}
+	}
+	return "";
+}
+
+// set the radio button with the given value as being checked
+// do nothing if there are no radio buttons
+// if the given value does not exist, all the radio buttons are reset to unchecked
+// Function based on code from: http://www.somacon.com/p143.php
+function setCheckedValue(radioObj, newValue) {
+	if(!radioObj)
+		return;
+	var radioLength = radioObj.length;
+	if(radioLength == undefined) {
+		radioObj.checked = (radioObj.value == newValue.toString());
+		return;
+	}
+	for(var i = 0; i < radioLength; i++) {
+		radioObj[i].checked = false;
+		if(radioObj[i].value == newValue.toString()) {
+			radioObj[i].checked = true;
+		}
+	}
+}
+
+// Remove selected option from list
+// Function based on code from: http://www.mredkj.com/tutorials/tutorial005.html
+function removeOptionSelected() {
+	var elSel = document.clms_options_form.clms_cities;
+	var i;
+	for (i = elSel.length - 1; i>=0; i--) {
+		if (elSel.options[i].selected) {
+			elSel.remove(i);
+		}
+	}
+}
+
+// Add option from text input to list
+// Function based on code from: http://www.mredkj.com/tutorials/tutorial005.html
+function addOption( newCity ) {
+	var elOptNew = document.createElement( 'option' );
+	elOptNew.text = newCity;
+	elOptNew.value = newCity;
+	var elSel = document.clms_options_form.clms_cities;
+
+	try {
+		elSel.add(elOptNew, null); // standards compliant; doesn't work in IE
+	}
+	catch(ex) {
+		elSel.add(elOptNew); // IE only
+	}
+	
+	document.clms_options_form.clms_city.value = "";
+	document.clms_options_form.clms_city.focus();
+}
+
+// Saves options to localStorage.
+function save_options() {
+
+	localStorage["clms_query"] = document.clms_options_form.clms_query.value;
+	localStorage["clms_catAbb"] = document.clms_options_form.clms_catAbb.children[document.clms_options_form.clms_catAbb.selectedIndex].value;  
+	localStorage["clms_srchType"] = getCheckedValue( document.clms_options_form.clms_srchType ); 
+	localStorage["clms_minAsk"] = document.clms_options_form.clms_minAsk.value;
+	localStorage["clms_maxAsk"] = document.clms_options_form.clms_maxAsk.value;
+	localStorage["clms_hasPic"] = document.clms_options_form.clms_hasPic.checked;
+
+	var select = document.clms_options_form.clms_cities;
+	var cities_string = new Array();
+	for ( var c=select.length-1; c>=0; --c ){
+		cities_string.push( select.children[c].value );
+	}
+	localStorage["clms_cities"] = cities_string.join();
+	
+	// Update status to let user know options were saved.
+	document.getElementById("status").innerHTML = "Defaults saved!";
+	
+}
+
+// Clears options in localStorage.
+function clear_options() {
+
+	if( confirm( "Clear current defaults?") ){
+		localStorage.removeItem("clms_query");
+		localStorage.removeItem("clms_catAbb");
+		localStorage.removeItem("clms_srchType");
+		localStorage.removeItem("clms_minAsk");
+		localStorage.removeItem("clms_maxAsk");
+		localStorage.removeItem("clms_hasPic");
+		localStorage.removeItem("clms_cities");
+		return true;
+		} else {
+		return false;
+	} 
+
+	// Update status to let user know options were reset.
+	document.getElementById("status").innerHTML = "Defaults reset!";
+	restore_options();
+}
+
+// Restores select box state to saved value from localStorage.
+function restore_options() {
+
+	if( localStorage["clms_query"] ){
+		document.clms_options_form.clms_query.value = localStorage["clms_query"];
+	}
+	
+	if( localStorage["clms_catAbb"] ){
+		var select = document.clms_options_form.clms_catAbb;
+		for (var i = 0; i < select.children.length; i++) {
+			var child = select.children[i];
+			if (child.value == localStorage["clms_catAbb"]) {
+				child.selected = "true";
+				break;
+			}
+		}
+	}
+
+	if( localStorage["clms_srchType"] ){
+		setCheckedValue( document.clms_options_form.clms_srchType, localStorage["clms_srchType"] );
+	}
+
+	if( localStorage["clms_minAsk"] ){
+		document.clms_options_form.clms_minAsk.value = localStorage["clms_minAsk"];
+	}
+  
+	if( localStorage["clms_maxAsk"] ){
+		document.clms_options_form.clms_maxAsk.value = localStorage["clms_maxAsk"];
+	}
+
+	if( localStorage["clms_hasPic"] == 'true' ){
+		document.clms_options_form.clms_hasPic.checked = true;
+		document.clms_options_form.clms_hasPic.value = '1';
+	} else {
+		document.clms_options_form.clms_hasPic.checked = false;
+		document.clms_options_form.clms_hasPic.value = '0';
+	}
+
+	var city_list = localStorage["clms_cities"];
+	var cities = city_list.split(',');
+	for ( var c=cities.length-1; c>=0; --c ){
+		addOption( cities[c] );
+	}
+}
+
+
+</script>
+
+<body onload="restore_options()" style="text-align: center;">
+
+<h3 align="center">craigslist multisearch default options</h3>
+
+<form name="clms_options_form">
+<div style="width: 600px; background-color: #eee; border: 1px solid #ccc; padding: 4px; margin: 0 auto;">
+
+	<div style="float: left;">
+		<p align="center"><b>search defaults</b></p>
+		<table id="searchtable" cellpadding="2"> 
+			<tr> 
+				<td><label>search for: <input name="clms_query" size="30"></label></td>
+			</tr>
+			<tr>
+				<td>in:
+					<select name="clms_catAbb"></option>
+						<option value="ccc">all community</option>
+						<option value="eee">all event</option>
+						<option value="sss">all for sale / wanted</option>
+						<option disabled value="">--</option>
+						<option value="atq"> antiques</option>
+						<option value="app"> appliances</option>
+						<option value="art"> arts &amp; crafts</option>
+						<option value="pts"> auto parts</option>
+						<option value="bab"> baby &amp; kid stuff</option>
+						<option value="bar"> barter</option>
+						<option value="bik"> bicycles</option>
+						<option value="boa"> boats</option>
+						<option value="bks"> books</option>
+						<option value="bfs"> business</option>
+						<option value="ctd"> cars &amp; trucks - by dealer</option>
+						<option value="cto"> cars &amp; trucks - by owner</option>
+						<option value="cta"> cars+trucks</option>
+						<option value="emd"> cds / dvds / vhs</option>
+						<option value="mob"> cell phones</option>
+						<option value="clo"> clothing</option>
+						<option value="clt"> collectibles</option>
+						<option value="sys"> computers &amp; tech</option>
+						<option value="ele"> electronics</option>
+						<option value="grd"> farm &amp; garden</option>
+						<option value="zip"> free stuff</option>
+						<option value="fua"> furniture</option>
+						<option value="fud"> furniture - by dealer</option>
+						<option value="fuo"> furniture - by owner</option>
+						<option value="gms"> garage sales</option>
+						<option value="for"> general</option>
+						<option value="hab"> health and beauty</option>
+						<option value="hsh"> household</option>
+						<option value="wan"> items wanted</option>
+						<option value="jwl"> jewelry</option>
+						<option value="mat"> materials</option>
+						<option value="mca"> motorcycles</option>
+						<option value="mcd"> motorcycles/scooters - by dealer</option>
+						<option value="mcy"> motorcycles/scooters - by owner</option>
+						<option value="msg"> musical instruments</option>
+						<option value="pho"> photo/video</option>
+						<option value="rvs"> recreational vehicles</option>
+						<option value="spo"> sporting goods</option>
+						<option value="tia"> tickets</option>
+						<option value="tid"> tickets - by dealer</option>
+						<option value="tix"> tickets - by owner</option>
+						<option value="tls"> tools</option>
+						<option value="tag"> toys &amp; games</option>
+						<option value="vgm"> video gaming</option>
+						<option disabled value="">--</option>
+						<option value="ggg">all gigs</option>
+						<option value="hhh">all housing</option>
+						<option value="jjj">all jobs</option>
+						<option value="ppp">all personals</option>
+						<option value="res">all resume</option>
+						<option value="bbb">all services offered
+					</select> 
+				</td> 
+			</tr>
+			<tr>
+				<td> 
+					<label><input type="radio" name="clms_srchType" value="T" title="search only posting titles" checked="true">title only</label> 
+					<label><input type="radio" name="clms_srchType" value="A" title="search the entire posting">entire post</label> 
+				</td> 
+			</tr>
+			<tr>
+				<td>price: <input type="text" name="clms_minAsk" size="6">&nbsp;<input type="text" name="clms_maxAsk" size="6"></td>
+			</tr>
+			<tr>
+				<td><label><input type="checkbox" name="clms_hasPic"> has image</label></td> 
+			</tr> 
+		</table> 
+	</div>
+
+	<div style="float: right;">
+		<p align="center"><b>search cities</b></p>
+		<input type="text" name="clms_city" size="12"> <input type="button" value="Add City" onclick="addOption(document.clms_options_form.clms_city.value);"><br>
+		<select id="clms_cities" name="clms_cities" multiple></select><br>
+		<input type="button" value="Remove Cities" onclick="removeOptionSelected();" />
+		<p align="center" style="font-size: 10px;">Note: City changes are not saved until you click <b>Save Defaults</b> below!</p>
+	</div>
+	
+	<div style="clear: both;"><hr></div>
+
+	<button onclick="save_options()">Save Defaults</button> <button onclick="clear_options()">Clear Defaults</button>
+	<p id="status" name="status" align="center"></p>
+
+</div>
+</form>
+
+</body>
+</html>
